@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Unblocked Games</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f4f9;
+    color: #333;
+  }
+  header {
+    background: #1a202c;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+    letter-spacing: 0.05rem;
+  }
+  #game-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0 auto;
+  }
+  .game-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .game-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  .game-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+  .game-card .title {
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 0.5rem;
+  }
+  #game-screen {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+  }
+  #game-screen iframe {
+    border: none;
+    flex: 1;
+    width: 100%;
+    background: #000;
+  }
+  #back-btn {
+    padding: 0.7rem 1rem;
+    background: #1a202c;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<header>Unblocked Games</header>
+
+<!-- Page: Games List -->
+<div id="game-list"></div>
+
+<!-- Page: Single Game View -->
+<div id="game-screen">
+  <button id="back-btn">⬅ Back</button>
+  <iframe id="game-frame" allowfullscreen></iframe>
+</div>
+
+<script>
+(async function() {
+  const listEl = document.querySelector("#game-list");
+  const screenEl = document.querySelector("#game-screen");
+  const frameEl = document.querySelector("#game-frame");
+  const backBtn = document.querySelector("#back-btn");
+
+  // Replace with the **raw** GitHub URL for games.json
+  const jsonURL = "https://raw.githubusercontent.com/swarmintelli/Unblocked-Games-CDN/main/games.json";
+
+  try {
+    const res = await fetch(jsonURL);
+    const games = await res.json();
+
+    // Build the game list
+    games.forEach(game => {
+      const card = document.createElement("div");
+      card.className = "game-card";
+      card.innerHTML = `
+        <img src="${game.game_image_icon}" alt="${game.name}">
+        <div class="title">${game.name}</div>
+      `;
+      card.addEventListener("click", () => {
+        localStorage.setItem("selectedGame", JSON.stringify(game));
+        openGame();
+      });
+      listEl.append(card);
+    });
+
+  } catch (err) {
+    listEl.innerHTML = "<p style='text-align:center;color:#555;'>Failed to load games.</p>";
+    console.error(err);
+  }
+
+  function openGame() {
+    const game = JSON.parse(localStorage.getItem("selectedGame"));
+    if (!game) return;
+    listEl.style.display = "none";
+    screenEl.style.display = "flex";
+    frameEl.src = game.iframe;
+  }
+
+  backBtn.addEventListener("click", () => {
+    screenEl.style.display = "none";
+    listEl.style.display = "grid";
+    frameEl.src = "";
+    localStorage.removeItem("selectedGame");
+  });
+
+  // On load, see if a game was stored
+  if (localStorage.getItem("selectedGame")) {
+    openGame();
+  }
+})();
+</script>
+
+</body>
+</html>
